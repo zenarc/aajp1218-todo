@@ -24,7 +24,7 @@ namespace todo.Controllers
         }
 
         [ActionName("Create")]
-        public async Task<IActionResult> CreateAsync()
+        public IActionResult CreateAsync()
         {
             return View();
         }

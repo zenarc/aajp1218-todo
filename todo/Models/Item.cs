@@ -1,4 +1,4 @@
-﻿using Microsoft.Azure.Documents;
+﻿using System.ComponentModel.DataAnnotations;
 using Newtonsoft.Json;
 
 namespace todo.Models
@@ -8,10 +8,10 @@ namespace todo.Models
         [JsonProperty(PropertyName = "id")]
         public string Id { get; set; }
 
-        [JsonProperty(PropertyName = "name")]
+        [JsonProperty(PropertyName = "name"), Required]
         public string Name { get; set; }
 
-        [JsonProperty(PropertyName = "description")]
+        [JsonProperty(PropertyName = "description"), Required]
         public string Description { get; set; }
 
         [JsonProperty(PropertyName = "isComplete")]
