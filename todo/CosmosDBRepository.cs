@@ -9,20 +9,38 @@ using Microsoft.Azure.Documents.Linq;
 
 namespace todo
 {
-    public static class CosmosDBRepository<T> where T : class
+    public class CosmosDBRepository<T> where T : class
     {
 
-        private static readonly string Endpoint = "{Endpoint}";
-        private static readonly string Key = "{Key}";
-        private static readonly string DatabaseId = "ToDoList";
-        private static readonly string CollectionId = "Items";
-        private static DocumentClient client;
+        private static AppConfiguration _option;
+        private static DocumentClient _client;
 
-        public static async Task<T> GetItemAsync(string id)
+        public CosmosDBRepository(AppConfiguration option)
+        {
+            _option = option;
+
+            // 接続ポリシーの作成
+            ConnectionPolicy cp = new ConnectionPolicy
+            {
+                ConnectionMode = ConnectionMode.Direct,
+#if RELEASE
+                ConnectionProtocol = Protocol.Tcp
+#endif
+            };
+
+            // このAppのリージョンを追加
+            cp.PreferredLocations.Add(_option.REGION_NAME);
+
+            // CosmosDB接続クライアント作成
+            _client = new DocumentClient(new Uri(_option.Endpoint), _option.Key, cp);
+            _client.OpenAsync(); // パフォーマンス改善のため一度接続しておく
+        }
+
+        public async Task<T> GetItemAsync(string id)
         {
             try
             {
-                Document document = await client.ReadDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, CollectionId, id));
+                Document document = await _client.ReadDocumentAsync(UriFactory.CreateDocumentUri(_option.DatabaseId, _option.CollectionId, id));
                 return (T)(dynamic)document;
             }
             catch (DocumentClientException e)
@@ -38,10 +56,10 @@ namespace todo
             }
         }
 
-        public static async Task<IEnumerable<T>> GetItemsAsync(Expression<Func<T, bool>> predicate)
+        public async Task<IEnumerable<T>> GetItemsAsync(Expression<Func<T, bool>> predicate)
         {
-            IDocumentQuery<T> query = client.CreateDocumentQuery<T>(
-                UriFactory.CreateDocumentCollectionUri(DatabaseId, CollectionId),
+            IDocumentQuery<T> query = _client.CreateDocumentQuery<T>(
+                UriFactory.CreateDocumentCollectionUri(_option.DatabaseId, _option.CollectionId),
                 new FeedOptions { MaxItemCount = -1 })
                 .Where(predicate)
                 .AsDocumentQuery();
@@ -55,24 +73,21 @@ namespace todo
             return results;
         }
 
-        public static async Task<Document> CreateItemAsync(T item)
+        public async Task<Document> CreateItemAsync(T item)
         {
-            return await client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri(DatabaseId, CollectionId), item);
+            return await _client.CreateDocumentAsync(UriFactory.CreateDocumentCollectionUri(_option.DatabaseId, _option.CollectionId), item);
         }
 
-        public static async Task<Document> UpdateItemAsync(string id, T item)
+        public async Task<Document> UpdateItemAsync(string id, T item)
         {
-            return await client.ReplaceDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, CollectionId, id), item);
+            return await _client.ReplaceDocumentAsync(UriFactory.CreateDocumentUri(_option.DatabaseId, _option.CollectionId, id), item);
         }
 
-        public static async Task DeleteItemAsync(string id)
+        public async Task DeleteItemAsync(string id)
         {
-            await client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(DatabaseId, CollectionId, id));
+            await _client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(_option.DatabaseId, _option.CollectionId, id));
         }
 
-        public static void Initialize()
-        {
-            client = new DocumentClient(new Uri(Endpoint), Key);
-        }
+
     }
 }

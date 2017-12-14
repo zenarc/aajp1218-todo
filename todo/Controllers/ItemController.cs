@@ -2,19 +2,24 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using todo.Models;
+using Microsoft.Extensions.Options;
 
 namespace todo.Controllers
 {
     public class ItemController : Controller
     {
-        public ItemController(){
-            CosmosDBRepository<todo.Models.Item>.Initialize();
+        private readonly CosmosDBRepository<Item> _repository;
+        private readonly AppConfiguration _options;
+
+        public ItemController(IOptions<AppConfiguration> optionsAccessor){
+            _options = optionsAccessor.Value;
+            _repository = new CosmosDBRepository<Item>(_options);
         }
 
         [ActionName("Index")]
         public async Task<IActionResult> Index()
         {
-            var items = await CosmosDBRepository<Item>.GetItemsAsync(d => !d.Completed);
+            var items = await _repository.GetItemsAsync(d => !d.Completed);
             return View(items);
         }
 
@@ -31,7 +36,7 @@ namespace todo.Controllers
         {
             if (ModelState.IsValid)
             {
-                await CosmosDBRepository<Item>.CreateItemAsync(item);
+                await _repository.CreateItemAsync(item);
                 return RedirectToAction("Index");
             }
 
@@ -45,7 +50,7 @@ namespace todo.Controllers
         {
             if (ModelState.IsValid)
             {
-                await CosmosDBRepository<Item>.UpdateItemAsync(item.Id, item);
+                await _repository.UpdateItemAsync(item.Id, item);
                 return RedirectToAction("Index");
             }
 
@@ -60,7 +65,7 @@ namespace todo.Controllers
                 return BadRequest();
             }
 
-            Item item = await CosmosDBRepository<Item>.GetItemAsync(id);
+            Item item = await _repository.GetItemAsync(id);
             if (item == null)
             {
                 return NotFound();
@@ -77,7 +82,7 @@ namespace todo.Controllers
                 return BadRequest();
             }
 
-            Item item = await CosmosDBRepository<Item>.GetItemAsync(id);
+            Item item = await _repository.GetItemAsync(id);
             if (item == null)
             {
                 return NotFound();
@@ -91,14 +96,14 @@ namespace todo.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmedAsync([Bind("Id")] string id)
         {
-            await CosmosDBRepository<Item>.DeleteItemAsync(id);
+            await _repository.DeleteItemAsync(id);
             return RedirectToAction("Index");
         }
 
         [ActionName("Details")]
         public async Task<ActionResult> DetailsAsync(string id)
         {
-            Item item = await CosmosDBRepository<Item>.GetItemAsync(id);
+            Item item = await _repository.GetItemAsync(id);
             return View(item);
         }
     }

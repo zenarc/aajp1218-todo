@@ -22,6 +22,9 @@ namespace todo
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            // appsettingsファイルを読み込む
+            services.Configure<AppConfiguration>(Configuration.GetSection("AppConfiguration"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
