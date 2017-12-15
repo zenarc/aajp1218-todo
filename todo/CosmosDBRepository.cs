@@ -29,7 +29,7 @@ namespace todo
             };
 
             // このAppのリージョンを追加
-            cp.PreferredLocations.Add(_option.REGION_NAME);
+            cp.PreferredLocations.Add(_option.Region);
 
             // CosmosDB接続クライアント作成
             _client = new DocumentClient(new Uri(_option.Endpoint), _option.Key, cp);
