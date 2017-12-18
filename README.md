@@ -1,1 +1,1 @@
-# aajp1218-todo
+# Cosmos DB .NET Core Todo Sample App
