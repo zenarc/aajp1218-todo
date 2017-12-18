@@ -1,0 +1,17 @@
+﻿@model EndPointViewModel
+
+@{
+    ViewBag.Title = "CosmosDB Endpoint";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<ul>
+    <li>
+        書き込みリージョン: @Model.WriteEndPoint
+    </li>
+    <li>
+        読み取りリージョン: @Model.ReadEndPoint
+    </li>
+</ul>

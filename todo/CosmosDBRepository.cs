@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Documents;
 using Microsoft.Azure.Documents.Client;
 using Microsoft.Azure.Documents.Linq;
+using todo.Models;
 
 namespace todo
 {
@@ -86,6 +87,16 @@ namespace todo
         public async Task DeleteItemAsync(string id)
         {
             await _client.DeleteDocumentAsync(UriFactory.CreateDocumentUri(_option.DatabaseId, _option.CollectionId, id));
+        }
+
+        public EndPointViewModel GetEndpoints()
+        {
+            var vm = new EndPointViewModel
+            {
+                WriteEndPoint = _client.WriteEndpoint.Host,
+                ReadEndPoint = _client.ReadEndpoint.Host
+            };
+            return vm;
         }
 
 
